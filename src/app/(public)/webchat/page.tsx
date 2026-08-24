@@ -4,7 +4,7 @@ import { Wrench, ShieldCheck, Clock, MessageSquare, ExternalLink, Sparkles } fro
 import { ChatWidget } from "@/components/webchat/chat-widget";
 
 const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+44 7700 900077";
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+880 1675-413414";
 const WHATSAPP_RAW_NUMBER = WHATSAPP_NUMBER.replace(/[^0-9]/g, "");
 
 export default function WebchatPage() {
