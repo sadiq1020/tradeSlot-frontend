@@ -2,7 +2,7 @@
 
 import React from "react";
 import { format, parseISO } from "date-fns";
-import { Clock, MapPin, MessageSquare, Phone, PoundSterling } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import { Booking, BookingStatus } from "@/types/api";
 import { cn } from "@/lib/utils";
 
@@ -12,23 +12,71 @@ interface JobTicketCardProps {
 }
 
 export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
-  // Format short display ID e.g. #B4F291 from UUID
-  const shortId = `#${booking.id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+  // Defensive field resolution across various backend formats
+  const customerName =
+    booking.customerName ||
+    booking.customer?.name ||
+    "Customer Request";
 
-  // Time range formatting (e.g., 14:00 - 15:00)
+  const serviceDesc =
+    booking.serviceDescription ||
+    booking.jobDescription ||
+    booking.description ||
+    booking.service ||
+    booking.notes ||
+    "Trade Booking";
+
+  const address =
+    booking.address ||
+    booking.customer?.address ||
+    booking.location ||
+    "";
+
+  const postcode =
+    booking.postcode ||
+    booking.customer?.postcode ||
+    "";
+
+  const startTimeRaw =
+    booking.startTime ||
+    booking.slot?.startTime ||
+    booking.date;
+
+  const endTimeRaw =
+    booking.endTime ||
+    booking.slot?.endTime;
+
+  const amount =
+    booking.amount ??
+    booking.fee ??
+    booking.bookingFee ??
+    50;
+
+  // Short display ID e.g. #B4F291
+  const shortId = `#${(booking.id || "")
+    .replace(/-/g, "")
+    .slice(0, 6)
+    .toUpperCase()}`;
+
+  // Time range formatting
   const formatTimeSlot = () => {
+    if (!startTimeRaw) return "Time Pending";
     try {
-      const start = parseISO(booking.startTime);
-      const end = parseISO(booking.endTime);
-      return `${format(start, "HH:mm")} — ${format(end, "HH:mm")}`;
+      const start = parseISO(startTimeRaw);
+      if (endTimeRaw) {
+        const end = parseISO(endTimeRaw);
+        return `${format(start, "HH:mm")} — ${format(end, "HH:mm")}`;
+      }
+      return format(start, "HH:mm");
     } catch {
-      return "Time Pending";
+      return startTimeRaw;
     }
   };
 
   const formatDate = () => {
+    if (!startTimeRaw) return "";
     try {
-      const start = parseISO(booking.startTime);
+      const start = parseISO(startTimeRaw);
       return format(start, "EEE, dd MMM");
     } catch {
       return "";
@@ -64,7 +112,7 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
         };
       default:
         return {
-          label: status,
+          label: status || "PENDING",
           className: "border-border-hairline text-text-secondary bg-bg-surface",
         };
     }
@@ -99,9 +147,11 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
           <span className="font-mono text-xs font-bold tracking-wider text-text-secondary group-hover:text-accent-brass transition-colors">
             {shortId}
           </span>
-          <span className="font-mono text-[11px] text-text-muted">
-            &bull; {formatDate()}
-          </span>
+          {formatDate() && (
+            <span className="font-mono text-[11px] text-text-muted">
+              &bull; {formatDate()}
+            </span>
+          )}
         </div>
 
         {/* Rotated Stamp Badge */}
@@ -118,18 +168,18 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
       {/* Card Body: Customer & Service Description */}
       <div className="py-2 space-y-1">
         <h3 className="font-heading text-base font-bold text-text-primary tracking-tight group-hover:text-white transition-colors">
-          {booking.customerName}{" "}
+          {customerName}{" "}
           <span className="text-text-secondary font-normal font-sans">
-            — {booking.serviceDescription}
+            — {serviceDesc}
           </span>
         </h3>
 
-        {booking.address && (
+        {(address || postcode) && (
           <div className="flex items-center space-x-1.5 text-xs text-text-muted truncate">
             <MapPin className="w-3 h-3 text-text-muted flex-shrink-0" />
             <span className="truncate">
-              {booking.address}
-              {booking.postcode ? `, ${booking.postcode}` : ""}
+              {address}
+              {postcode ? `${address ? ", " : ""}${postcode}` : ""}
             </span>
           </div>
         )}
@@ -146,7 +196,7 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
           {/* Amount / Paid status */}
           <div className="flex items-center space-x-1">
             <span className="font-bold text-text-primary">
-              £{booking.amount || 50}
+              £{amount}
             </span>
             <span
               className={cn(

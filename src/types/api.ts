@@ -51,25 +51,57 @@ export type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
 export type PaymentStatus = "UNPAID" | "PAID" | "REFUNDED";
 export type BookingChannel = "WHATSAPP" | "WEBCHAT" | "MANUAL";
 
-export interface Booking {
-  id: string;
-  customerName: string;
-  customerPhone?: string;
-  customerEmail?: string;
-  serviceDescription: string;
+export interface Customer {
+  id?: string;
+  name?: string;
+  phone?: string;
+  email?: string;
   address?: string;
   postcode?: string;
-  startTime: string; // ISO string
-  endTime: string;   // ISO string
+}
+
+export interface Booking {
+  id: string;
+  // Direct or nested customer fields
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  customer?: Customer;
+
+  // Direct or alternative description fields
+  serviceDescription?: string;
+  jobDescription?: string;
+  description?: string;
+  service?: string;
+  notes?: string;
+
+  // Address
+  address?: string;
+  postcode?: string;
+  location?: string;
+
+  // Dates & Times
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  slot?: {
+    startTime?: string;
+    endTime?: string;
+    date?: string;
+  };
+
+  // Status & Financials
   status: BookingStatus;
   paymentStatus: PaymentStatus;
-  amount: number;
+  amount?: number;
+  fee?: number;
+  bookingFee?: number;
   platformFee?: number;
-  channel: BookingChannel;
+  channel?: BookingChannel;
   stripePaymentIntentId?: string;
   stripeSessionId?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface GetBookingsParams {

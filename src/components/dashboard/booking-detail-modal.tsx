@@ -15,7 +15,6 @@ import {
   XCircle,
   Loader2,
   ShieldCheck,
-  Tag,
 } from "lucide-react";
 import { Booking, BookingStatus } from "@/types/api";
 import {
@@ -44,18 +43,77 @@ export function BookingDetailModal({
 
   if (!isOpen || !booking) return null;
 
-  const shortId = `#${booking.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+  // Defensive field resolution across various backend formats
+  const customerName =
+    booking.customerName ||
+    booking.customer?.name ||
+    "Customer Request";
+
+  const serviceDesc =
+    booking.serviceDescription ||
+    booking.jobDescription ||
+    booking.description ||
+    booking.service ||
+    booking.notes ||
+    "Trade Booking";
+
+  const address =
+    booking.address ||
+    booking.customer?.address ||
+    booking.location ||
+    "Address provided during chat";
+
+  const postcode =
+    booking.postcode ||
+    booking.customer?.postcode ||
+    "";
+
+  const customerPhone =
+    booking.customerPhone ||
+    booking.customer?.phone;
+
+  const customerEmail =
+    booking.customerEmail ||
+    booking.customer?.email;
+
+  const startTimeRaw =
+    booking.startTime ||
+    booking.slot?.startTime ||
+    booking.date;
+
+  const endTimeRaw =
+    booking.endTime ||
+    booking.slot?.endTime;
+
+  const amount =
+    booking.amount ??
+    booking.fee ??
+    booking.bookingFee ??
+    50;
+
+  const platformFee =
+    booking.platformFee ?? 5;
+
+  const shortId = `#${(booking.id || "")
+    .replace(/-/g, "")
+    .slice(0, 8)
+    .toUpperCase()}`;
 
   const formatFullDateTime = () => {
+    if (!startTimeRaw) return { date: "Date Pending", time: "Time Pending" };
     try {
-      const start = parseISO(booking.startTime);
-      const end = parseISO(booking.endTime);
+      const start = parseISO(startTimeRaw);
+      let timeStr = format(start, "HH:mm");
+      if (endTimeRaw) {
+        const end = parseISO(endTimeRaw);
+        timeStr = `${format(start, "HH:mm")} — ${format(end, "HH:mm")}`;
+      }
       return {
         date: format(start, "EEEE, dd MMMM yyyy"),
-        time: `${format(start, "HH:mm")} — ${format(end, "HH:mm")}`,
+        time: timeStr,
       };
     } catch {
-      return { date: "Date Pending", time: "Time Pending" };
+      return { date: startTimeRaw, time: "Time Pending" };
     }
   };
 
@@ -134,10 +192,10 @@ export function BookingDetailModal({
               CUSTOMER & JOB REQUEST
             </p>
             <h2 className="font-heading text-xl font-bold text-text-primary">
-              {booking.customerName}
+              {customerName}
             </h2>
             <p className="font-sans text-sm text-text-secondary">
-              {booking.serviceDescription}
+              {serviceDesc}
             </p>
           </div>
 
@@ -163,40 +221,42 @@ export function BookingDetailModal({
                 <span>Service Address</span>
               </span>
               <p className="font-sans text-xs text-text-primary">
-                {booking.address || "Address provided during chat"}
+                {address}
               </p>
-              {booking.postcode && (
+              {postcode && (
                 <span className="inline-block font-mono text-[10px] px-1.5 py-0.5 rounded bg-bg-surface border border-border-hairline text-accent-brass mt-1">
-                  {booking.postcode}
+                  {postcode}
                 </span>
               )}
             </div>
           </div>
 
           {/* Customer Contact Details */}
-          <div className="space-y-2">
-            <p className="font-mono text-[10px] text-text-muted uppercase tracking-widest">
-              CONTACT INFORMATION
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              {booking.customerPhone && (
-                <div className="flex items-center space-x-2 p-2.5 rounded bg-bg-surface-elevated border border-border-hairline">
-                  <Phone className="w-3.5 h-3.5 text-text-muted" />
-                  <span className="font-mono text-text-primary">
-                    {booking.customerPhone}
-                  </span>
-                </div>
-              )}
-              {booking.customerEmail && (
-                <div className="flex items-center space-x-2 p-2.5 rounded bg-bg-surface-elevated border border-border-hairline">
-                  <Mail className="w-3.5 h-3.5 text-text-muted" />
-                  <span className="font-mono text-text-primary truncate">
-                    {booking.customerEmail}
-                  </span>
-                </div>
-              )}
+          {(customerPhone || customerEmail) && (
+            <div className="space-y-2">
+              <p className="font-mono text-[10px] text-text-muted uppercase tracking-widest">
+                CONTACT INFORMATION
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                {customerPhone && (
+                  <div className="flex items-center space-x-2 p-2.5 rounded bg-bg-surface-elevated border border-border-hairline">
+                    <Phone className="w-3.5 h-3.5 text-text-muted" />
+                    <span className="font-mono text-text-primary">
+                      {customerPhone}
+                    </span>
+                  </div>
+                )}
+                {customerEmail && (
+                  <div className="flex items-center space-x-2 p-2.5 rounded bg-bg-surface-elevated border border-border-hairline">
+                    <Mail className="w-3.5 h-3.5 text-text-muted" />
+                    <span className="font-mono text-text-primary truncate">
+                      {customerEmail}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Billing & Payout Breakdown */}
           <div className="p-4 rounded-lg bg-bg-surface-elevated border border-border-hairline space-y-2">
@@ -206,14 +266,14 @@ export function BookingDetailModal({
                 <span>Job Flat Fee:</span>
               </span>
               <span className="font-mono text-sm font-bold text-text-primary">
-                £{booking.amount || 50}.00
+                £{amount}.00
               </span>
             </div>
 
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-text-muted">Platform Fee:</span>
               <span className="text-text-secondary">
-                £{booking.platformFee || 5}.00
+                £{platformFee}.00
               </span>
             </div>
 
