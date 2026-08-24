@@ -17,11 +17,20 @@ export function useConnectStatus() {
 }
 
 export function useCreateConnectOnboarding() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: () => paymentsApi.createConnectOnboardingUrl(),
-    onSuccess: (data) => {
-      if (data.data?.onboardingUrl) {
-        window.location.href = data.data.onboardingUrl;
+    onSuccess: (response: any) => {
+      queryClient.invalidateQueries({ queryKey: PAYMENT_KEYS.connectStatus });
+      const targetUrl =
+        response?.data?.onboardingUrl ||
+        response?.data?.url ||
+        response?.onboardingUrl ||
+        response?.url;
+
+      if (targetUrl) {
+        window.location.href = targetUrl;
       }
     },
   });
