@@ -1,9 +1,11 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
-import { Wrench, ShieldCheck, Clock, Sparkles } from "lucide-react";
+import { Wrench, ShieldCheck, Clock, MessageSquare, ExternalLink, Sparkles } from "lucide-react";
 import { ChatWidget } from "@/components/webchat/chat-widget";
+
+const WHATSAPP_NUMBER =
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+44 7700 900077";
+const WHATSAPP_RAW_NUMBER = WHATSAPP_NUMBER.replace(/[^0-9]/g, "");
 
 export default function WebchatPage() {
   return (
@@ -55,8 +57,38 @@ export default function WebchatPage() {
           {/* Embedded Chatbot Widget */}
           <ChatWidget />
 
+          {/* WhatsApp Alternative Channel Banner */}
+          <div className="p-3.5 rounded-lg border border-border-hairline bg-bg-surface flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center space-x-3">
+              <div className="h-8 w-8 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <MessageSquare className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-bold text-text-primary flex items-center gap-1.5">
+                  <span>Prefer to book on WhatsApp?</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    24/7 AI BOT
+                  </span>
+                </p>
+                <p className="text-[11px] text-text-secondary">
+                  Text <span className="font-mono font-semibold text-text-primary">{WHATSAPP_NUMBER}</span> to check slots and reserve instantly.
+                </p>
+              </div>
+            </div>
+
+            <a
+              href={`https://wa.me/${WHATSAPP_RAW_NUMBER}?text=Hi%2C%20I%20would%20like%20to%20book%20a%20trade%20slot`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors whitespace-nowrap shadow-sm"
+            >
+              <span>Chat on WhatsApp</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
           {/* Trust badges footer */}
-          <div className="flex flex-wrap items-center justify-center gap-4 text-center font-mono text-[11px] text-text-muted pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-center font-mono text-[11px] text-text-muted pt-1">
             <div className="flex items-center space-x-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-accent-copper" />
               <span>Verified Tradespeople</span>
