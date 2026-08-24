@@ -36,14 +36,15 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // If no response or original request already retried or is auth endpoint, reject directly
+    // If no response or original request already retried or is an auth endpoint, reject directly without refreshing
     if (
       !error.response ||
       error.response.status !== 401 ||
       !originalRequest ||
       originalRequest._retry ||
       originalRequest.url?.includes("/auth/login") ||
-      originalRequest.url?.includes("/auth/refresh")
+      originalRequest.url?.includes("/auth/refresh") ||
+      originalRequest.url?.includes("/auth/me")
     ) {
       return Promise.reject(error);
     }
