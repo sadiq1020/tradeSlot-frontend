@@ -43,8 +43,24 @@ export function ChatMessageItem({
   const isUser = message.sender === "user";
 
   const resolvedBooking = message.booking;
-  const bookingId = message.bookingId || resolvedBooking?.id;
+
+  const textRefMatch =
+    message.text.match(/\(#([a-zA-Z0-9_-]+)\)/) ||
+    message.text.match(/booking\s*\(?#([a-zA-Z0-9_-]+)\)?/i) ||
+    message.text.match(/#([a-zA-Z0-9]{5,})/);
+
+  const bookingId =
+    message.bookingId ||
+    resolvedBooking?.id ||
+    (textRefMatch ? textRefMatch[1] : undefined);
+
   const checkoutUrl = message.checkoutUrl || resolvedBooking?.checkoutUrl;
+
+  const shouldShowPayButton =
+    Boolean(bookingId) ||
+    message.text.toLowerCase().includes("complete payment") ||
+    message.text.toLowerCase().includes("provisional booking") ||
+    Boolean(checkoutUrl);
 
   const { dateLabel, timeLabel } = formatBookingDateTime(resolvedBooking);
 
@@ -124,7 +140,7 @@ export function ChatMessageItem({
         )}
 
         {/* Finalized Booking Ticket & Pay Now Button */}
-        {bookingId && (
+        {shouldShowPayButton && (
           <div className="p-4 rounded-xl bg-bg-surface-elevated border border-accent-brass/50 space-y-3 shadow-lg">
             <div className="flex items-center justify-between border-b border-border-hairline pb-2">
               <div className="flex items-center space-x-2">

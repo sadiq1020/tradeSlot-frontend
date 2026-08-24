@@ -85,15 +85,46 @@ export function ChatWidget() {
         responseData.text ||
         "I've noted your request. Let me check the schedule.";
 
+      // Extract booking ID from various potential response structures or from text (#reference)
+      const textRefMatch =
+        botReplyText.match(/\(#([a-zA-Z0-9_-]+)\)/) ||
+        botReplyText.match(/booking\s*\(?#([a-zA-Z0-9_-]+)\)?/i) ||
+        botReplyText.match(/#([a-zA-Z0-9]{5,})/);
+      const textBookingId = textRefMatch ? textRefMatch[1] : undefined;
+
+      const detectedBookingId =
+        responseData.bookingId ||
+        responseData.booking?.id ||
+        responseData.data?.bookingId ||
+        responseData.data?.booking?.id ||
+        responseData.data?.id ||
+        responseData.id ||
+        textBookingId;
+
+      const detectedCheckoutUrl =
+        responseData.checkoutUrl ||
+        responseData.data?.checkoutUrl ||
+        responseData.booking?.checkoutUrl ||
+        responseData.data?.booking?.checkoutUrl;
+
+      const isPaymentRequired =
+        Boolean(detectedBookingId) ||
+        botReplyText.toLowerCase().includes("complete payment") ||
+        botReplyText.toLowerCase().includes("confirm your booking");
+
       const botMessage: ChatMessage = {
         id: `msg_bot_${Date.now()}`,
         sender: "bot",
         text: botReplyText,
         timestamp: format(new Date(), "HH:mm"),
-        availableSlots: responseData.availableSlots || responseData.slots,
-        booking: responseData.booking,
-        bookingId: responseData.bookingId || responseData.booking?.id,
-        checkoutUrl: responseData.checkoutUrl || responseData.booking?.checkoutUrl,
+        availableSlots:
+          responseData.availableSlots ||
+          responseData.slots ||
+          responseData.data?.availableSlots ||
+          responseData.data?.slots,
+        booking: responseData.booking || responseData.data?.booking,
+        bookingId: detectedBookingId,
+        checkoutUrl: detectedCheckoutUrl,
       };
 
       setMessages((prev) => [...prev, botMessage]);
