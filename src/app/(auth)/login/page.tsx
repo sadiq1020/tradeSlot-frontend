@@ -49,7 +49,7 @@ export default function LoginPage() {
 
   const handleFillDemo = () => {
     setValue("email", "trader@tradeslot.com", { shouldValidate: true });
-    setValue("password", "password123", { shouldValidate: true });
+    setValue("password", "Password123!", { shouldValidate: true });
     setServerError(null);
   };
 
@@ -211,7 +211,7 @@ export default function LoginPage() {
                 Fill Demo Trader Credentials
               </Button>
               <p className="mt-1.5 text-[10px] font-mono text-text-muted text-center">
-                Reviewer shortcut &bull; trader@tradeslot.com / password123
+                Reviewer shortcut &bull; trader@tradeslot.com / Password123!
               </p>
             </div>
           </CardContent>
