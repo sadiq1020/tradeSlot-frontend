@@ -37,6 +37,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -45,6 +46,12 @@ export default function LoginPage() {
       password: "",
     },
   });
+
+  const handleFillDemo = () => {
+    setValue("email", "trader@tradeslot.com", { shouldValidate: true });
+    setValue("password", "password123", { shouldValidate: true });
+    setServerError(null);
+  };
 
   const onSubmit = async (data: LoginFormData) => {
     setServerError(null);
@@ -190,6 +197,23 @@ export default function LoginPage() {
                 )}
               </Button>
             </form>
+
+            {/* Demo Trader Auto-Fill Button for Reviewers */}
+            <div className="mt-4 pt-4 border-t border-border-hairline/80 flex flex-col items-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleFillDemo}
+                className="w-full text-xs text-accent-brass border-accent-brass/30 hover:bg-accent-brass-muted hover:text-accent-brass hover:border-accent-brass"
+              >
+                <Wrench className="w-3.5 h-3.5 mr-1.5" />
+                Fill Demo Trader Credentials
+              </Button>
+              <p className="mt-1.5 text-[10px] font-mono text-text-muted text-center">
+                Reviewer shortcut &bull; trader@tradeslot.com / password123
+              </p>
+            </div>
           </CardContent>
         </Card>
 
