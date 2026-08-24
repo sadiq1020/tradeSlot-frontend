@@ -43,6 +43,26 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
     booking.bookingFee ??
     50;
 
+  // Resolve payment status flexibly (camelCase, snake_case, boolean flags)
+  const paymentStatusRaw = (
+    booking.paymentStatus ||
+    (booking as any).payment_status ||
+    (booking as any).paymentState ||
+    (booking as any).payment_state ||
+    ((booking as any).isPaid ? "PAID" : undefined) ||
+    ((booking as any).paid ? "PAID" : undefined) ||
+    "UNPAID"
+  ).toUpperCase();
+
+  const isPaid =
+    paymentStatusRaw === "PAID" ||
+    paymentStatusRaw === "COMPLETED" ||
+    paymentStatusRaw === "SUCCEEDED" ||
+    Boolean(booking.stripePaymentIntentId) ||
+    Boolean((booking as any).stripe_payment_intent_id);
+
+  const displayPaymentStatus = isPaid ? "PAID" : "UNPAID";
+
   const shortId = `#${(booking.id || "")
     .replace(/-/g, "")
     .slice(0, 6)
@@ -167,13 +187,13 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
             </span>
             <span
               className={cn(
-                "text-[9px] px-1 py-0.2 rounded font-bold uppercase",
-                booking.paymentStatus === "PAID"
-                  ? "text-accent-copper bg-accent-copper-muted"
+                "text-[9px] px-1.5 py-0.2 rounded font-bold uppercase",
+                isPaid
+                  ? "text-accent-copper bg-accent-copper-muted font-extrabold border border-accent-copper/40"
                   : "text-text-muted bg-bg-surface-elevated"
               )}
             >
-              {booking.paymentStatus || "UNPAID"}
+              {displayPaymentStatus}
             </span>
           </div>
 

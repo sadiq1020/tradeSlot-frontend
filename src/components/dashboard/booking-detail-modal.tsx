@@ -255,12 +255,30 @@ export function BookingDetailModal({
               <span
                 className={cn(
                   "font-bold uppercase px-2 py-0.5 rounded",
-                  booking.paymentStatus === "PAID"
-                    ? "text-accent-copper bg-accent-copper-muted"
+                  (
+                    booking.paymentStatus ||
+                    (booking as any).payment_status ||
+                    ((booking as any).isPaid ? "PAID" : undefined) ||
+                    ((booking as any).paid ? "PAID" : undefined) ||
+                    "UNPAID"
+                  ).toUpperCase() === "PAID" ||
+                    Boolean(booking.stripePaymentIntentId) ||
+                    Boolean((booking as any).stripe_payment_intent_id)
+                    ? "text-accent-copper bg-accent-copper-muted font-extrabold border border-accent-copper/40"
                     : "text-accent-rust bg-accent-rust-muted"
                 )}
               >
-                {booking.paymentStatus || "UNPAID"}
+                {(
+                  booking.paymentStatus ||
+                  (booking as any).payment_status ||
+                  ((booking as any).isPaid ? "PAID" : undefined) ||
+                  ((booking as any).paid ? "PAID" : undefined) ||
+                  "UNPAID"
+                ).toUpperCase() === "PAID" ||
+                Boolean(booking.stripePaymentIntentId) ||
+                Boolean((booking as any).stripe_payment_intent_id)
+                  ? "PAID"
+                  : "UNPAID"}
               </span>
             </div>
           </div>

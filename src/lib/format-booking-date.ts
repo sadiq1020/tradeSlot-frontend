@@ -93,7 +93,16 @@ export function formatBookingDateTime(booking: any): FormattedBookingTime {
 
   // If time is still pending, check direct rawTime field
   if (timeLabel === "Time Pending" && rawTime) {
-    timeLabel = String(rawTime);
+    try {
+      const parsed = parseISO(String(rawTime));
+      if (isValid(parsed)) {
+        timeLabel = format(parsed, "HH:mm");
+      } else {
+        timeLabel = String(rawTime);
+      }
+    } catch {
+      timeLabel = String(rawTime);
+    }
   }
 
   // If date is still pending, parse rawDate
@@ -103,6 +112,9 @@ export function formatBookingDateTime(booking: any): FormattedBookingTime {
       if (isValid(parsedDate)) {
         dateLabel = format(parsedDate, "EEEE, dd MMMM yyyy");
         shortDate = format(parsedDate, "EEE, dd MMM");
+        if (timeLabel === "Time Pending") {
+          timeLabel = format(parsedDate, "HH:mm");
+        }
       } else {
         dateLabel = String(rawDate);
         shortDate = String(rawDate);
@@ -111,6 +123,16 @@ export function formatBookingDateTime(booking: any): FormattedBookingTime {
       dateLabel = String(rawDate);
       shortDate = String(rawDate);
     }
+  }
+
+  // Clean any stray ISO strings in timeLabel
+  if (timeLabel.includes("T") && timeLabel.includes("Z")) {
+    try {
+      const parsed = parseISO(timeLabel);
+      if (isValid(parsed)) {
+        timeLabel = format(parsed, "HH:mm");
+      }
+    } catch {}
   }
 
   return { dateLabel, timeLabel, shortDate };
