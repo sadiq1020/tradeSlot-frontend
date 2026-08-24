@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { format, parseISO } from "date-fns";
 import { Clock, MapPin } from "lucide-react";
 import { Booking, BookingStatus } from "@/types/api";
+import { formatBookingDateTime } from "@/lib/format-booking-date";
 import { cn } from "@/lib/utils";
 
 interface JobTicketCardProps {
@@ -37,51 +37,18 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
     booking.customer?.postcode ||
     "";
 
-  const startTimeRaw =
-    booking.startTime ||
-    booking.slot?.startTime ||
-    booking.date;
-
-  const endTimeRaw =
-    booking.endTime ||
-    booking.slot?.endTime;
-
   const amount =
     booking.amount ??
     booking.fee ??
     booking.bookingFee ??
     50;
 
-  // Short display ID e.g. #B4F291
   const shortId = `#${(booking.id || "")
     .replace(/-/g, "")
     .slice(0, 6)
     .toUpperCase()}`;
 
-  // Time range formatting
-  const formatTimeSlot = () => {
-    if (!startTimeRaw) return "Time Pending";
-    try {
-      const start = parseISO(startTimeRaw);
-      if (endTimeRaw) {
-        const end = parseISO(endTimeRaw);
-        return `${format(start, "HH:mm")} — ${format(end, "HH:mm")}`;
-      }
-      return format(start, "HH:mm");
-    } catch {
-      return startTimeRaw;
-    }
-  };
-
-  const formatDate = () => {
-    if (!startTimeRaw) return "";
-    try {
-      const start = parseISO(startTimeRaw);
-      return format(start, "EEE, dd MMM");
-    } catch {
-      return "";
-    }
-  };
+  const { timeLabel, shortDate } = formatBookingDateTime(booking);
 
   // Status Badge styling according to Dispatch Board palette
   const getStatusBadge = (status: BookingStatus) => {
@@ -147,9 +114,9 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
           <span className="font-mono text-xs font-bold tracking-wider text-text-secondary group-hover:text-accent-brass transition-colors">
             {shortId}
           </span>
-          {formatDate() && (
+          {shortDate && (
             <span className="font-mono text-[11px] text-text-muted">
-              &bull; {formatDate()}
+              &bull; {shortDate}
             </span>
           )}
         </div>
@@ -189,7 +156,7 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
       <div className="mt-3 pt-3 border-t border-border-hairline/60 flex items-center justify-between font-mono text-xs text-text-secondary">
         <div className="flex items-center space-x-1.5 text-text-primary">
           <Clock className="w-3.5 h-3.5 text-accent-brass" />
-          <span className="font-bold tracking-tight">{formatTimeSlot()}</span>
+          <span className="font-bold tracking-tight">{timeLabel}</span>
         </div>
 
         <div className="flex items-center space-x-3 text-[11px]">

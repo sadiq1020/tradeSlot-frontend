@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { format, parseISO } from "date-fns";
 import {
   X,
   Clock,
@@ -21,6 +20,7 @@ import {
   useUpdateBookingStatus,
   useCancelBooking,
 } from "@/lib/queries/bookings";
+import { formatBookingDateTime } from "@/lib/format-booking-date";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -76,15 +76,6 @@ export function BookingDetailModal({
     booking.customerEmail ||
     booking.customer?.email;
 
-  const startTimeRaw =
-    booking.startTime ||
-    booking.slot?.startTime ||
-    booking.date;
-
-  const endTimeRaw =
-    booking.endTime ||
-    booking.slot?.endTime;
-
   const amount =
     booking.amount ??
     booking.fee ??
@@ -99,25 +90,7 @@ export function BookingDetailModal({
     .slice(0, 8)
     .toUpperCase()}`;
 
-  const formatFullDateTime = () => {
-    if (!startTimeRaw) return { date: "Date Pending", time: "Time Pending" };
-    try {
-      const start = parseISO(startTimeRaw);
-      let timeStr = format(start, "HH:mm");
-      if (endTimeRaw) {
-        const end = parseISO(endTimeRaw);
-        timeStr = `${format(start, "HH:mm")} — ${format(end, "HH:mm")}`;
-      }
-      return {
-        date: format(start, "EEEE, dd MMMM yyyy"),
-        time: timeStr,
-      };
-    } catch {
-      return { date: startTimeRaw, time: "Time Pending" };
-    }
-  };
-
-  const { date, time } = formatFullDateTime();
+  const { dateLabel, timeLabel } = formatBookingDateTime(booking);
 
   const handleUpdateStatus = async (status: BookingStatus) => {
     try {
@@ -207,11 +180,11 @@ export function BookingDetailModal({
                 <span>Scheduled Date</span>
               </span>
               <p className="font-mono text-xs font-semibold text-text-primary">
-                {date}
+                {dateLabel}
               </p>
               <p className="font-mono text-xs text-accent-brass font-bold flex items-center space-x-1 mt-1">
                 <Clock className="w-3 h-3" />
-                <span>{time}</span>
+                <span>{timeLabel}</span>
               </p>
             </div>
 
