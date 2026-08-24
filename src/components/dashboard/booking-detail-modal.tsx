@@ -77,13 +77,46 @@ export function BookingDetailModal({
     booking.customer?.email;
 
   const amount =
+    (booking.payment?.amount
+      ? booking.payment.amount >= 100
+        ? Math.round(booking.payment.amount / 100)
+        : booking.payment.amount
+      : undefined) ??
     booking.amount ??
     booking.fee ??
     booking.bookingFee ??
     50;
 
   const platformFee =
-    booking.platformFee ?? 5;
+    (booking.payment?.applicationFeeAmount
+      ? booking.payment.applicationFeeAmount >= 100
+        ? Math.round(booking.payment.applicationFeeAmount / 100)
+        : booking.payment.applicationFeeAmount
+      : undefined) ??
+    booking.platformFee ??
+    5;
+
+  const paymentStatusRaw = (
+    booking.payment?.status ||
+    (booking as any).payment?.paymentStatus ||
+    booking.paymentStatus ||
+    (booking as any).payment_status ||
+    (booking as any).paymentState ||
+    (booking as any).payment_state ||
+    ((booking as any).isPaid ? "PAID" : undefined) ||
+    ((booking as any).paid ? "PAID" : undefined) ||
+    "UNPAID"
+  ).toUpperCase();
+
+  const isPaid =
+    paymentStatusRaw === "PAID" ||
+    paymentStatusRaw === "COMPLETED" ||
+    paymentStatusRaw === "SUCCEEDED" ||
+    Boolean(booking.payment?.stripePaymentIntentId) ||
+    Boolean(booking.stripePaymentIntentId) ||
+    Boolean((booking as any).stripe_payment_intent_id);
+
+  const displayPaymentStatus = isPaid ? "PAID" : "UNPAID";
 
   const shortId = `#${(booking.id || "")
     .replace(/-/g, "")
@@ -255,30 +288,12 @@ export function BookingDetailModal({
               <span
                 className={cn(
                   "font-bold uppercase px-2 py-0.5 rounded",
-                  (
-                    booking.paymentStatus ||
-                    (booking as any).payment_status ||
-                    ((booking as any).isPaid ? "PAID" : undefined) ||
-                    ((booking as any).paid ? "PAID" : undefined) ||
-                    "UNPAID"
-                  ).toUpperCase() === "PAID" ||
-                    Boolean(booking.stripePaymentIntentId) ||
-                    Boolean((booking as any).stripe_payment_intent_id)
+                  isPaid
                     ? "text-accent-copper bg-accent-copper-muted font-extrabold border border-accent-copper/40"
                     : "text-accent-rust bg-accent-rust-muted"
                 )}
               >
-                {(
-                  booking.paymentStatus ||
-                  (booking as any).payment_status ||
-                  ((booking as any).isPaid ? "PAID" : undefined) ||
-                  ((booking as any).paid ? "PAID" : undefined) ||
-                  "UNPAID"
-                ).toUpperCase() === "PAID" ||
-                Boolean(booking.stripePaymentIntentId) ||
-                Boolean((booking as any).stripe_payment_intent_id)
-                  ? "PAID"
-                  : "UNPAID"}
+                {displayPaymentStatus}
               </span>
             </div>
           </div>

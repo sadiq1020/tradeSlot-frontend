@@ -48,8 +48,21 @@ export interface CreateWorkAreaInput {
 }
 
 export type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
-export type PaymentStatus = "UNPAID" | "PAID" | "REFUNDED";
+export type PaymentStatus = "UNPAID" | "PAID" | "SUCCEEDED" | "PENDING" | "FAILED" | "REFUNDED";
 export type BookingChannel = "WHATSAPP" | "WEBCHAT" | "MANUAL";
+
+export interface Payment {
+  id: string;
+  bookingId: string;
+  stripePaymentIntentId?: string | null;
+  stripeAccountId?: string;
+  amount?: number;
+  applicationFeeAmount?: number;
+  status: PaymentStatus;
+  stripeEventId?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export interface Customer {
   id?: string;
@@ -81,6 +94,10 @@ export interface Booking {
   location?: string;
 
   // Dates & Times
+  slotStart?: string;
+  slotEnd?: string;
+  slot_start?: string;
+  slot_end?: string;
   startTime?: string;
   endTime?: string;
   date?: string;
@@ -92,7 +109,8 @@ export interface Booking {
 
   // Status & Financials
   status: BookingStatus;
-  paymentStatus: PaymentStatus;
+  payment?: Payment | null;
+  paymentStatus?: PaymentStatus;
   amount?: number;
   fee?: number;
   bookingFee?: number;

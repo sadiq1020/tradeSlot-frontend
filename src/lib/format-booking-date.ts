@@ -13,6 +13,8 @@ export function formatBookingDateTime(booking: any): FormattedBookingTime {
 
   // 1. Gather all potential start time representations (camelCase & snake_case)
   const rawStart =
+    booking.slotStart ||
+    booking.slot_start ||
     booking.startTime ||
     booking.start_time ||
     booking.start ||
@@ -27,6 +29,8 @@ export function formatBookingDateTime(booking: any): FormattedBookingTime {
 
   // 2. Gather all potential end time representations
   const rawEnd =
+    booking.slotEnd ||
+    booking.slot_end ||
     booking.endTime ||
     booking.end_time ||
     booking.end ||

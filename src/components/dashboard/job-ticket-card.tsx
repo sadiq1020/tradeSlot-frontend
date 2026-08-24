@@ -38,13 +38,20 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
     "";
 
   const amount =
+    (booking.payment?.amount
+      ? booking.payment.amount >= 100
+        ? Math.round(booking.payment.amount / 100)
+        : booking.payment.amount
+      : undefined) ??
     booking.amount ??
     booking.fee ??
     booking.bookingFee ??
     50;
 
-  // Resolve payment status flexibly (camelCase, snake_case, boolean flags)
+  // Resolve payment status flexibly (nested payment relation, camelCase, snake_case, boolean flags)
   const paymentStatusRaw = (
+    booking.payment?.status ||
+    (booking as any).payment?.paymentStatus ||
     booking.paymentStatus ||
     (booking as any).payment_status ||
     (booking as any).paymentState ||
@@ -58,6 +65,7 @@ export function JobTicketCard({ booking, onClick }: JobTicketCardProps) {
     paymentStatusRaw === "PAID" ||
     paymentStatusRaw === "COMPLETED" ||
     paymentStatusRaw === "SUCCEEDED" ||
+    Boolean(booking.payment?.stripePaymentIntentId) ||
     Boolean(booking.stripePaymentIntentId) ||
     Boolean((booking as any).stripe_payment_intent_id);
 
